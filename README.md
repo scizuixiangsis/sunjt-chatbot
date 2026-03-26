@@ -8,6 +8,10 @@
 </p>
 
 <p align="center">
+  <a href="./README.zh-CN.md"><strong>简体中文</strong></a>
+</p>
+
+<p align="center">
   <a href="https://chatbot.dev"><strong>Read Docs</strong></a> ·
   <a href="#features"><strong>Features</strong></a> ·
   <a href="#model-providers"><strong>Model Providers</strong></a> ·
