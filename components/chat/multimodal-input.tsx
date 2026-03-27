@@ -667,11 +667,31 @@ function PureModelSelectorCompact({
         <ModelSelectorInput placeholder="Search models..." />
         <ModelSelectorList>
           {(() => {
-            const curatedIds = new Set(chatModels.map((m) => m.id));
+            const availableCuratedIds = new Set(
+              chatModels
+                .filter(
+                  (model) =>
+                    !dynamicModels ||
+                    dynamicModels.some(
+                      (dynamicModel) => dynamicModel.id === model.id
+                    )
+                )
+                .map((model) => model.id)
+            );
+            const extraDynamicModels = dynamicModels
+              ? dynamicModels.filter(
+                  (model) =>
+                    !chatModels.some(
+                      (curatedModel) => curatedModel.id === model.id
+                    )
+                )
+              : [];
             const allModels = dynamicModels
               ? [
-                  ...chatModels,
-                  ...dynamicModels.filter((m) => !curatedIds.has(m.id)),
+                  ...chatModels.filter((model) =>
+                    availableCuratedIds.has(model.id)
+                  ),
+                  ...extraDynamicModels,
                 ]
               : chatModels;
 
@@ -680,13 +700,16 @@ function PureModelSelectorCompact({
               { model: ChatModel; curated: boolean }[]
             > = {};
             for (const model of allModels) {
-              const key = curatedIds.has(model.id)
+              const key = availableCuratedIds.has(model.id)
                 ? "_available"
                 : model.provider;
               if (!grouped[key]) {
                 grouped[key] = [];
               }
-              grouped[key].push({ model, curated: curatedIds.has(model.id) });
+              grouped[key].push({
+                model,
+                curated: availableCuratedIds.has(model.id),
+              });
             }
 
             const sortedKeys = Object.keys(grouped).sort((a, b) => {

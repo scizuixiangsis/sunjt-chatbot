@@ -1,11 +1,26 @@
 export const DEFAULT_CHAT_MODEL = "moonshotai/kimi-k2-0905";
 
+const anthropicApiKey = process.env.ANTHROPIC_API_KEY?.trim();
+const anthropicBaseUrl = process.env.ANTHROPIC_BASE_URL?.trim();
+
+const qnaigcAnthropicModelMap: Partial<Record<string, string>> = {
+  "anthropic/claude-opus-4-6": "claude-4.6-opus",
+  "anthropic/claude-sonnet-4-5": "claude-4.5-sonnet",
+};
+
 export const titleModel = {
   id: "mistral/mistral-small",
   name: "Mistral Small",
   provider: "mistral",
   description: "Fast model for title generation",
   gatewayOrder: ["mistral"],
+};
+
+export const directTitleModel = {
+  id: "anthropic/claude-3-5-haiku-latest",
+  name: "Claude Haiku 3.5",
+  provider: "anthropic",
+  description: "Fast Claude model for title generation",
 };
 
 export type ModelCapabilities = {
@@ -24,6 +39,24 @@ export type ChatModel = {
 };
 
 export const chatModels: ChatModel[] = [
+  {
+    id: "anthropic/claude-opus-4-6",
+    name: "Claude Opus 4.6",
+    provider: "anthropic",
+    description: "Highest-capability Claude model",
+  },
+  {
+    id: "anthropic/claude-sonnet-4-5",
+    name: "Claude Sonnet 4.5",
+    provider: "anthropic",
+    description: "Balanced Claude model with tool use",
+  },
+  {
+    id: "anthropic/claude-3-5-haiku-latest",
+    name: "Claude Haiku 3.5",
+    provider: "anthropic",
+    description: "Fast Claude model with tool use",
+  },
   {
     id: "deepseek/deepseek-v3.2",
     name: "DeepSeek V3.2",
@@ -84,11 +117,91 @@ export const chatModels: ChatModel[] = [
   },
 ];
 
+const directModelCapabilities: Partial<Record<string, ModelCapabilities>> = {
+  "anthropic/claude-opus-4-6": {
+    tools: true,
+    vision: true,
+    reasoning: false,
+  },
+  "anthropic/claude-sonnet-4-5": {
+    tools: true,
+    vision: true,
+    reasoning: false,
+  },
+  "anthropic/claude-3-5-haiku-latest": {
+    tools: true,
+    vision: true,
+    reasoning: false,
+  },
+};
+
+export function isAnthropicModel(modelId: string) {
+  return modelId.startsWith("anthropic/");
+}
+
+export function getAnthropicBaseURL() {
+  if (!anthropicBaseUrl) {
+    return undefined;
+  }
+
+  const trimmedBaseUrl = anthropicBaseUrl.replace(/\/+$/, "");
+  return trimmedBaseUrl.endsWith("/v1")
+    ? trimmedBaseUrl
+    : `${trimmedBaseUrl}/v1`;
+}
+
+export function usesQnaigcAnthropicCompat() {
+  return getAnthropicBaseURL()?.startsWith("https://api.qnaigc.com") ?? false;
+}
+
+export function hasAnthropicApiKey() {
+  if (getAnthropicBaseURL()) {
+    return Boolean(anthropicApiKey);
+  }
+
+  return Boolean(anthropicApiKey?.startsWith("sk-ant-"));
+}
+
+export function getProviderModelId(modelId: string) {
+  if (usesQnaigcAnthropicCompat()) {
+    return (
+      qnaigcAnthropicModelMap[modelId] ?? modelId.split("/").slice(1).join("/")
+    );
+  }
+
+  return modelId.split("/").slice(1).join("/");
+}
+
+export function getDirectTitleModelId() {
+  if (usesQnaigcAnthropicCompat()) {
+    return "anthropic/claude-sonnet-4-5";
+  }
+
+  return directTitleModel.id;
+}
+
+function isAnthropicModelAvailable(modelId: string) {
+  if (!hasAnthropicApiKey()) {
+    return false;
+  }
+
+  if (usesQnaigcAnthropicCompat()) {
+    return modelId in qnaigcAnthropicModelMap;
+  }
+
+  return true;
+}
+
 export async function getCapabilities(): Promise<
   Record<string, ModelCapabilities>
 > {
   const results = await Promise.all(
     chatModels.map(async (model) => {
+      const directCapabilities = directModelCapabilities[model.id];
+      if (directCapabilities) {
+        return [model.id, directCapabilities];
+      }
+
       try {
         const res = await fetch(
           `https://ai-gateway.vercel.sh/v1/models/${model.id}/endpoints`,
@@ -171,12 +284,15 @@ export async function getAllGatewayModels(): Promise<
 }
 
 export function getActiveModels(): ChatModel[] {
-  return chatModels;
+  return chatModels.filter(
+    (model) =>
+      !isAnthropicModel(model.id) || isAnthropicModelAvailable(model.id)
+  );
 }
 
-export const allowedModelIds = new Set(chatModels.map((m) => m.id));
+export const allowedModelIds = new Set(getActiveModels().map((m) => m.id));
 
-export const modelsByProvider = chatModels.reduce(
+export const modelsByProvider = getActiveModels().reduce(
   (acc, model) => {
     if (!acc[model.provider]) {
       acc[model.provider] = [];

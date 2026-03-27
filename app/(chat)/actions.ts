@@ -4,9 +4,11 @@ import { generateText, type UIMessage } from "ai";
 import { cookies } from "next/headers";
 import { auth } from "@/app/(auth)/auth";
 import type { VisibilityType } from "@/components/chat/visibility-selector";
-import { titleModel } from "@/lib/ai/models";
 import { titlePrompt } from "@/lib/ai/prompts";
-import { getTitleModel } from "@/lib/ai/providers";
+import {
+  getTitleModel,
+  getTitleModelProviderOptions,
+} from "@/lib/ai/providers";
 import {
   deleteMessagesByChatIdAfterTimestamp,
   getChatById,
@@ -25,13 +27,13 @@ export async function generateTitleFromUserMessage({
 }: {
   message: UIMessage;
 }) {
+  const providerOptions = getTitleModelProviderOptions();
+
   const { text } = await generateText({
     model: getTitleModel(),
     system: titlePrompt,
     prompt: getTextFromMessage(message),
-    providerOptions: {
-      gateway: { order: titleModel.gatewayOrder },
-    },
+    ...(providerOptions ? { providerOptions } : {}),
   });
   return text
     .replace(/^[#*"\s]+/, "")
