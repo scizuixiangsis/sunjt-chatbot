@@ -104,7 +104,7 @@ function PureMessages({
           )}
 
           <div
-            className="min-h-[24px] min-w-[24px] shrink-0"
+            className="min-h-6 min-w-6 shrink-0"
             ref={messagesEndRef}
           />
         </div>
@@ -112,7 +112,7 @@ function PureMessages({
 
       <button
         aria-label="Scroll to bottom"
-        className={`absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 items-center rounded-full border border-border/50 bg-card/90 px-3.5 shadow-[var(--shadow-float)] backdrop-blur-lg transition-all duration-200 h-7 text-[10px] ${
+        className={`absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 items-center rounded-full border border-border/50 bg-card/90 px-3.5 shadow-(--shadow-float) backdrop-blur-lg transition-all duration-200 h-7 text-[10px] ${
           isAtBottom
             ? "pointer-events-none scale-90 opacity-0"
             : "pointer-events-auto scale-100 opacity-100"
