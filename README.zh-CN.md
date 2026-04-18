@@ -39,7 +39,13 @@
 
 该模板通过 [Vercel AI Gateway](https://vercel.com/docs/ai-gateway) 以统一接口接入多个 AI 模型。模型配置位于 `lib/ai/models.ts`，并支持针对不同模型进行提供商路由。当前内置模型包括：Mistral、Moonshot、DeepSeek、OpenAI 和 xAI。
 
-这个仓库现在还额外支持一条 Claude 专用通道。非 Claude 模型继续走 AI Gateway；Claude 模型则可以走官方 Anthropic API，或者走 qnaigc 这种 Anthropic 兼容网关。切换方式由环境变量控制：默认模型继续依赖 `AI_GATEWAY_API_KEY`，Claude 侧使用 `ANTHROPIC_API_KEY`，如需走兼容网关再额外设置 `ANTHROPIC_BASE_URL`。当 `ANTHROPIC_BASE_URL=https://api.qnaigc.com` 时，应用会按 qnaigc 的 Anthropic 兼容协议，以 Bearer Token 调用 `/v1/messages`，当前已验证并开放的 qnaigc Claude 模型为 `anthropic/claude-sonnet-4-5` 和 `anthropic/claude-opus-4-6`。
+这个仓库还额外支持一条 Claude 专用通道和一条通用 OpenAI 兼容代理通道：
+
+- **AI Gateway**（默认）：非 Claude 模型继续走 AI Gateway。
+- **Anthropic SDK**：Claude 模型可以走官方 Anthropic API，或者走 qnaigc 这类 Anthropic 兼容网关。
+- **OpenAI 兼容代理**：当 `ANTHROPIC_BASE_URL` 指向通用代理（如 `https://newapi.dzkjm.cn`）时，所有支持的模型都会通过 OpenAI 兼容协议（`/v1/chat/completions`）路由。当前支持 `claude-sonnet-4-6`、`claude-opus-4-6` 和 `gemini-3.1-pro-preview`。
+
+切换方式由环境变量控制：默认模型继续依赖 `AI_GATEWAY_API_KEY`，Claude 侧使用 `ANTHROPIC_API_KEY`，如需走兼容网关再额外设置 `ANTHROPIC_BASE_URL`。当 `ANTHROPIC_BASE_URL=https://api.qnaigc.com` 时，应用会按 Anthropic Messages API 协议调用；其他自定义地址则按 OpenAI 兼容协议调用。
 
 ### AI Gateway 认证
 
@@ -49,14 +55,16 @@
 
 借助 [AI SDK](https://ai-sdk.dev/docs/introduction)，你也可以只用少量代码切换到直连模型提供商，例如 [OpenAI](https://openai.com)、[Anthropic](https://anthropic.com)、[Cohere](https://cohere.com/) 等，或接入 [更多提供商](https://ai-sdk.dev/providers/ai-sdk-providers)。
 
-实际使用时，可以把它理解为一套双通道配置：
+实际使用时，可以把它理解为一套多通道配置：
 
 - `AI_GATEWAY_API_KEY` 负责原本那组 Gateway 模型。
-- `ANTHROPIC_API_KEY` 负责 Claude 直连或 Claude 兼容网关。
-- `ANTHROPIC_BASE_URL` 在直连官方 Anthropic 时可不填；走 qnaigc 这类兼容网关时需要填写。
+- `ANTHROPIC_API_KEY` 负责 Claude 直连或代理访问。
+- `ANTHROPIC_BASE_URL` 在直连官方 Anthropic 时可不填；走兼容网关时需要填写。
+  - `https://api.qnaigc.com` → Anthropic Messages API 协议（qnaigc）
+  - 其他地址（如 `https://newapi.dzkjm.cn`）→ OpenAI 兼容协议
 - 每次修改 `.env.local` 后，都要重启 `pnpm dev`，让 Next.js 重新加载服务端环境变量。
 
-如果把这两个中间层放在一起看：AI Gateway 是这个项目默认使用的多供应商总网关；qnaigc 则是一个第三方的 Anthropic 兼容网关，当前只用于 Claude 这条通道。换句话说，它们都位于你的应用和底层模型供应商之间，但 AI Gateway 是通用主通道，qnaigc 是 Claude 的兼容接入通道。
+如果把这几个中间层放在一起看：AI Gateway 是这个项目默认使用的多供应商总网关；qnaigc 是一个第三方 Anthropic 兼容网关，用于 Claude 通道；通用 OpenAI 兼容代理（如 newapi.dzkjm.cn）可以通过单一端点服务多个模型家族（Claude、Gemini 等）。
 
 ## 自行部署
 

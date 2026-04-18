@@ -1,4 +1,5 @@
 import { anthropic, createAnthropic } from "@ai-sdk/anthropic";
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { customProvider, gateway } from "ai";
 import { isTestEnvironment } from "../constants";
 import {
@@ -7,7 +8,9 @@ import {
   getProviderModelId,
   hasAnthropicApiKey,
   isAnthropicModel,
+  isCustomProxyModel,
   titleModel,
+  usesCustomProxy,
 } from "./models";
 
 const anthropicBaseURL = getAnthropicBaseURL();
@@ -18,6 +21,17 @@ const configuredAnthropicProvider = anthropicBaseURL
       authToken: process.env.ANTHROPIC_API_KEY?.trim(),
     })
   : anthropic;
+
+const customProxyProvider =
+  anthropicBaseURL && usesCustomProxy()
+    ? createOpenAICompatible({
+        name: "custom-proxy",
+        baseURL: anthropicBaseURL,
+        headers: {
+          Authorization: `Bearer ${process.env.ANTHROPIC_API_KEY?.trim()}`,
+        },
+      })
+    : null;
 
 export const myProvider = isTestEnvironment
   ? (() => {
@@ -36,7 +50,13 @@ export function getLanguageModel(modelId: string) {
     return myProvider.languageModel(modelId);
   }
 
-  if (isAnthropicModel(modelId) && hasAnthropicApiKey()) {
+  // Generic OpenAI-compatible proxy: route all supported models (Claude + Gemini)
+  if (isCustomProxyModel(modelId) && customProxyProvider) {
+    return customProxyProvider.chatModel(getProviderModelId(modelId));
+  }
+
+  // Anthropic SDK (direct Anthropic or qnaigc — only when NOT using custom proxy)
+  if (isAnthropicModel(modelId) && hasAnthropicApiKey() && !usesCustomProxy()) {
     return configuredAnthropicProvider(getProviderModelId(modelId));
   }
 
@@ -49,8 +69,14 @@ export function getTitleModel() {
   }
 
   if (hasAnthropicApiKey() && !process.env.AI_GATEWAY_API_KEY) {
+    const titleModelId = getDirectTitleModelId();
+    if (usesCustomProxy() && customProxyProvider) {
+      return customProxyProvider.chatModel(
+        getProviderModelId(titleModelId)
+      );
+    }
     return configuredAnthropicProvider(
-      getProviderModelId(getDirectTitleModelId())
+      getProviderModelId(titleModelId)
     );
   }
 

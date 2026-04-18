@@ -8,6 +8,13 @@ const qnaigcAnthropicModelMap: Partial<Record<string, string>> = {
   "anthropic/claude-sonnet-4-5": "claude-4.5-sonnet",
 };
 
+// Models supported by the generic OpenAI-compatible proxy (e.g. newapi.dzkjm.cn)
+const customProxyModelSet: Set<string> = new Set([
+  "anthropic/claude-opus-4-6",
+  "anthropic/claude-sonnet-4-6",
+  "google/gemini-3.1-pro-preview",
+]);
+
 export const titleModel = {
   id: "mistral/mistral-small",
   name: "Mistral Small",
@@ -46,6 +53,12 @@ export const chatModels: ChatModel[] = [
     description: "Highest-capability Claude model",
   },
   {
+    id: "anthropic/claude-sonnet-4-6",
+    name: "Claude Sonnet 4.6",
+    provider: "anthropic",
+    description: "Fast and capable Claude model",
+  },
+  {
     id: "anthropic/claude-sonnet-4-5",
     name: "Claude Sonnet 4.5",
     provider: "anthropic",
@@ -56,6 +69,12 @@ export const chatModels: ChatModel[] = [
     name: "Claude Haiku 3.5",
     provider: "anthropic",
     description: "Fast Claude model with tool use",
+  },
+  {
+    id: "google/gemini-3.1-pro-preview",
+    name: "Gemini 3.1 Pro Preview",
+    provider: "google",
+    description: "Google Gemini 3.1 Pro preview model",
   },
   {
     id: "deepseek/deepseek-v3.2",
@@ -123,6 +142,11 @@ const directModelCapabilities: Partial<Record<string, ModelCapabilities>> = {
     vision: true,
     reasoning: false,
   },
+  "anthropic/claude-sonnet-4-6": {
+    tools: true,
+    vision: true,
+    reasoning: false,
+  },
   "anthropic/claude-sonnet-4-5": {
     tools: true,
     vision: true,
@@ -133,10 +157,25 @@ const directModelCapabilities: Partial<Record<string, ModelCapabilities>> = {
     vision: true,
     reasoning: false,
   },
+  "google/gemini-3.1-pro-preview": {
+    tools: true,
+    vision: true,
+    reasoning: false,
+  },
 };
 
 export function isAnthropicModel(modelId: string) {
   return modelId.startsWith("anthropic/");
+}
+
+/** Whether we're using a generic OpenAI-compatible proxy (not qnaigc, not direct Anthropic). */
+export function usesCustomProxy() {
+  return Boolean(getAnthropicBaseURL()) && !usesQnaigcAnthropicCompat();
+}
+
+/** Whether this model should be routed through the custom proxy. */
+export function isCustomProxyModel(modelId: string) {
+  return customProxyModelSet.has(modelId) && usesCustomProxy();
 }
 
 export function getAnthropicBaseURL() {
@@ -173,6 +212,10 @@ export function getProviderModelId(modelId: string) {
 }
 
 export function getDirectTitleModelId() {
+  if (usesCustomProxy()) {
+    return "anthropic/claude-sonnet-4-6";
+  }
+
   if (usesQnaigcAnthropicCompat()) {
     return "anthropic/claude-sonnet-4-5";
   }
@@ -183,6 +226,11 @@ export function getDirectTitleModelId() {
 function isAnthropicModelAvailable(modelId: string) {
   if (!hasAnthropicApiKey()) {
     return false;
+  }
+
+  // Generic OpenAI-compatible proxy: only proxy-listed Anthropic models are available
+  if (usesCustomProxy()) {
+    return customProxyModelSet.has(modelId);
   }
 
   if (usesQnaigcAnthropicCompat()) {
@@ -284,10 +332,16 @@ export async function getAllGatewayModels(): Promise<
 }
 
 export function getActiveModels(): ChatModel[] {
-  return chatModels.filter(
-    (model) =>
-      !isAnthropicModel(model.id) || isAnthropicModelAvailable(model.id)
-  );
+  return chatModels.filter((model) => {
+    // Non-Anthropic direct models (e.g. google/*) require custom proxy
+    if (customProxyModelSet.has(model.id) && !isAnthropicModel(model.id)) {
+      return usesCustomProxy() && hasAnthropicApiKey();
+    }
+    if (isAnthropicModel(model.id)) {
+      return isAnthropicModelAvailable(model.id);
+    }
+    return true;
+  });
 }
 
 export const allowedModelIds = new Set(getActiveModels().map((m) => m.id));

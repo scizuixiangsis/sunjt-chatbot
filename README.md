@@ -42,7 +42,13 @@
 
 This template uses the [Vercel AI Gateway](https://vercel.com/docs/ai-gateway) to access multiple AI models through a unified interface. Models are configured in `lib/ai/models.ts` with per-model provider routing. Included models: Mistral, Moonshot, DeepSeek, OpenAI, and xAI.
 
-This repo also supports a second path for Claude models. Non-Claude models continue to use AI Gateway, while Claude models can be routed either to the official Anthropic API or to an Anthropic-compatible endpoint such as qnaigc. The switch is environment-variable driven: keep `AI_GATEWAY_API_KEY` for the default Gateway models, and set `ANTHROPIC_API_KEY` plus optional `ANTHROPIC_BASE_URL` for the Claude path. When `ANTHROPIC_BASE_URL=https://api.qnaigc.com`, the app uses Bearer authentication against qnaigc's Anthropic-compatible `/v1/messages` endpoint and currently exposes the verified qnaigc Claude models `anthropic/claude-sonnet-4-5` and `anthropic/claude-opus-4-6`.
+This repo also supports a second path for Claude models and a third path for generic OpenAI-compatible proxies:
+
+- **AI Gateway** (default): Non-Claude models continue to use AI Gateway.
+- **Anthropic SDK**: Claude models can be routed to the official Anthropic API or to an Anthropic-compatible endpoint such as qnaigc.
+- **OpenAI-compatible proxy**: When `ANTHROPIC_BASE_URL` points to a generic proxy (e.g. `https://newapi.dzkjm.cn`), all supported models are routed through the OpenAI-compatible protocol (`/v1/chat/completions`). Currently supports `claude-sonnet-4-6`, `claude-opus-4-6`, and `gemini-3.1-pro-preview`.
+
+The switch is environment-variable driven: keep `AI_GATEWAY_API_KEY` for the default Gateway models, and set `ANTHROPIC_API_KEY` plus optional `ANTHROPIC_BASE_URL` for the direct/proxy path. When `ANTHROPIC_BASE_URL=https://api.qnaigc.com`, the app uses the Anthropic Messages API protocol; any other custom base URL is treated as an OpenAI-compatible proxy.
 
 ### AI Gateway Authentication
 
@@ -52,14 +58,16 @@ This repo also supports a second path for Claude models. Non-Claude models conti
 
 With the [AI SDK](https://ai-sdk.dev/docs/introduction), you can also switch to direct LLM providers like [OpenAI](https://openai.com), [Anthropic](https://anthropic.com), [Cohere](https://cohere.com/), and [many more](https://ai-sdk.dev/providers/ai-sdk-providers) with just a few lines of code.
 
-In practical terms, this means the project now runs in a dual-channel setup:
+In practical terms, this means the project now runs in a multi-channel setup:
 
 - `AI_GATEWAY_API_KEY` powers the original Gateway-backed model set.
-- `ANTHROPIC_API_KEY` powers Claude direct access.
-- `ANTHROPIC_BASE_URL` is optional for official Anthropic, and required when Claude traffic should go through a compatible proxy like qnaigc.
+- `ANTHROPIC_API_KEY` powers Claude direct access or proxy access.
+- `ANTHROPIC_BASE_URL` is optional for official Anthropic; required when traffic should go through a compatible proxy.
+  - `https://api.qnaigc.com` → Anthropic Messages API protocol (qnaigc)
+  - Any other URL (e.g. `https://newapi.dzkjm.cn`) → OpenAI-compatible protocol
 - After editing `.env.local`, restart `pnpm dev` so Next.js reloads the server-side environment.
 
-If you are comparing the two middle layers: AI Gateway is the main multi-provider routing layer for the project, while qnaigc acts as a third-party Anthropic-compatible gateway for Claude traffic. In other words, both sit between your app and the underlying model provider, but AI Gateway is the default general-purpose gateway here, and qnaigc is only used for the Claude compatibility path.
+If you are comparing the middle layers: AI Gateway is the main multi-provider routing layer for the project; qnaigc acts as a third-party Anthropic-compatible gateway for Claude; a generic OpenAI-compatible proxy (like newapi.dzkjm.cn) can serve multiple model families (Claude, Gemini, etc.) through a single endpoint.
 
 ## Deploy Your Own
 
