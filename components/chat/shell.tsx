@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import {
   AlertDialog,
@@ -27,6 +28,7 @@ import { Messages } from "./messages";
 import { MultimodalInput } from "./multimodal-input";
 
 export function ChatShell() {
+  const pathname = usePathname();
   const {
     chatId,
     messages,
@@ -68,6 +70,10 @@ export function ChatShell() {
       setAttachments([]);
     }
   }, [chatId, setArtifact]);
+
+  if (pathname === "/tapd-agent") {
+    return null;
+  }
 
   return (
     <>

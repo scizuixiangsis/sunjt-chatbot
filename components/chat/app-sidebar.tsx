@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  BugIcon,
   MessageSquareIcon,
   PanelLeftIcon,
   PenSquareIcon,
@@ -73,7 +74,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
               <div className="group/logo relative flex items-center justify-center">
                 <SidebarMenuButton
                   asChild
-                  className="size-8 !px-0 items-center justify-center group-data-[collapsible=icon]:group-hover/logo:opacity-0"
+                  className="size-8 items-center justify-center px-0! group-data-[collapsible=icon]:group-hover/logo:opacity-0"
                   tooltip="Chatbot"
                 >
                   <Link href="/" onClick={() => setOpenMobile(false)}>
@@ -115,6 +116,21 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                   >
                     <PenSquareIcon className="size-4" />
                     <span className="font-medium">New chat</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    className="h-8 rounded-lg border border-sidebar-border text-[13px] text-sidebar-foreground/70 transition-colors duration-150 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                    tooltip="TAPD Bug Agent"
+                  >
+                    <Link
+                      href="/tapd-agent"
+                      onClick={() => setOpenMobile(false)}
+                    >
+                      <BugIcon className="size-4" />
+                      <span className="font-medium">TAPD Agent</span>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 {user && (
