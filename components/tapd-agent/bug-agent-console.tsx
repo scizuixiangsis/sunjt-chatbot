@@ -332,8 +332,16 @@ export function BugAgentConsole() {
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <Badge variant={mode === "tapd" ? "default" : "outline"}>
-                {mode === "tapd" ? "TAPD API" : "未配置"}
+              <Badge
+                className={cn(
+                  "h-9 px-3 text-sm",
+                  mode === "tapd"
+                    ? "border-emerald-200 bg-emerald-500/10 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/15 dark:text-emerald-300"
+                    : "border-destructive/30 bg-destructive/10 text-destructive dark:bg-destructive/20"
+                )}
+                variant="outline"
+              >
+                {mode === "tapd" ? "连接成功" : "连接失败"}
               </Badge>
               <StatusFilter
                 isAllSelected={isAllStatusSelected}
