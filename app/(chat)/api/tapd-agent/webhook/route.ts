@@ -7,9 +7,7 @@ type TapdWebhookPayload = {
 };
 
 export async function POST(request: Request) {
-  const payload = (await request
-    .json()
-    .catch(() => ({}))) as TapdWebhookPayload;
+  const payload = (await request.json().catch(() => ({}))) as TapdWebhookPayload;
   const expectedSecret = process.env.TAPD_WEBHOOK_SECRET;
 
   if (expectedSecret && payload.secret !== expectedSecret) {

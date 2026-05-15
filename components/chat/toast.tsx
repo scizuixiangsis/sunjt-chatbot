@@ -52,10 +52,9 @@ function Toast(props: ToastProps) {
         key={id}
       >
         <div
-          className={cn(
-            "data-[type=error]:text-red-600 data-[type=success]:text-green-600",
-            { "pt-1": multiLine }
-          )}
+          className={cn("data-[type=error]:text-red-600 data-[type=success]:text-green-600", {
+            "pt-1": multiLine,
+          })}
           data-type={type}
         >
           {iconsByType[type]}

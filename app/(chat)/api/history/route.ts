@@ -6,10 +6,7 @@ import { ChatbotError } from "@/lib/errors";
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
 
-  const limit = Math.min(
-    Math.max(Number.parseInt(searchParams.get("limit") || "10", 10), 1),
-    50
-  );
+  const limit = Math.min(Math.max(Number.parseInt(searchParams.get("limit") || "10", 10), 1), 50);
   const startingAfter = searchParams.get("starting_after");
   const endingBefore = searchParams.get("ending_before");
 

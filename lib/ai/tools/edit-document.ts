@@ -17,16 +17,12 @@ export const editDocument = ({ session, dataStream }: EditDocumentProps) =>
       id: z.string().describe("The ID of the artifact to edit"),
       old_string: z
         .string()
-        .describe(
-          "Exact string to find. Include 3-5 surrounding lines for uniqueness."
-        ),
+        .describe("Exact string to find. Include 3-5 surrounding lines for uniqueness."),
       new_string: z.string().describe("Replacement string"),
       replace_all: z
         .boolean()
         .optional()
-        .describe(
-          "Replace all occurrences instead of just the first (default false)"
-        ),
+        .describe("Replace all occurrences instead of just the first (default false)"),
     }),
     execute: async ({ id, old_string, new_string, replace_all }) => {
       const document = await getDocumentById({ id });

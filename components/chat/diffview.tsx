@@ -1,10 +1,5 @@
 import OrderedMap from "orderedmap";
-import {
-  DOMParser,
-  type MarkSpec,
-  type Node as ProsemirrorNode,
-  Schema,
-} from "prosemirror-model";
+import { DOMParser, type MarkSpec, type Node as ProsemirrorNode, Schema } from "prosemirror-model";
 import { schema } from "prosemirror-schema-basic";
 import { addListNodes } from "prosemirror-schema-list";
 import { EditorState } from "prosemirror-state";
@@ -59,12 +54,8 @@ export const DiffView = ({ oldContent, newContent }: DiffEditorProps) => {
     if (editorRef.current && !viewRef.current) {
       const parser = DOMParser.fromSchema(diffSchema);
 
-      const oldHtmlContent = renderToString(
-        <MessageResponse>{oldContent}</MessageResponse>
-      );
-      const newHtmlContent = renderToString(
-        <MessageResponse>{newContent}</MessageResponse>
-      );
+      const oldHtmlContent = renderToString(<MessageResponse>{oldContent}</MessageResponse>);
+      const newHtmlContent = renderToString(<MessageResponse>{newContent}</MessageResponse>);
 
       const oldContainer = document.createElement("div");
       oldContainer.innerHTML = oldHtmlContent;

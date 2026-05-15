@@ -71,13 +71,9 @@ export function getTitleModel() {
   if (hasAnthropicApiKey() && !process.env.AI_GATEWAY_API_KEY) {
     const titleModelId = getDirectTitleModelId();
     if (usesCustomProxy() && customProxyProvider) {
-      return customProxyProvider.chatModel(
-        getProviderModelId(titleModelId)
-      );
+      return customProxyProvider.chatModel(getProviderModelId(titleModelId));
     }
-    return configuredAnthropicProvider(
-      getProviderModelId(titleModelId)
-    );
+    return configuredAnthropicProvider(getProviderModelId(titleModelId));
   }
 
   return gateway.languageModel(titleModel.id);

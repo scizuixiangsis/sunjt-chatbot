@@ -12,12 +12,7 @@ import { after } from "next/server";
 import { createResumableStreamContext } from "resumable-stream";
 import { auth, type UserType } from "@/app/(auth)/auth";
 import { entitlementsByUserType } from "@/lib/ai/entitlements";
-import {
-  allowedModelIds,
-  chatModels,
-  DEFAULT_CHAT_MODEL,
-  getCapabilities,
-} from "@/lib/ai/models";
+import { allowedModelIds, chatModels, DEFAULT_CHAT_MODEL, getCapabilities } from "@/lib/ai/models";
 import { type RequestHints, systemPrompt } from "@/lib/ai/prompts";
 import { getLanguageModel } from "@/lib/ai/providers";
 import { createDocument } from "@/lib/ai/tools/create-document";
@@ -68,13 +63,9 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { id, message, messages, selectedChatModel, selectedVisibilityType } =
-      requestBody;
+    const { id, message, messages, selectedChatModel, selectedVisibilityType } = requestBody;
 
-    const [, session] = await Promise.all([
-      checkBotId().catch(() => null),
-      auth(),
-    ]);
+    const [, session] = await Promise.all([checkBotId().catch(() => null), auth()]);
 
     if (!session?.user) {
       return new ChatbotError("unauthorized:chat").toResponse();
@@ -128,32 +119,22 @@ export async function POST(request: Request) {
             m.parts
               ?.filter(
                 (p: Record<string, unknown>) =>
-                  p.state === "approval-responded" ||
-                  p.state === "output-denied"
+                  p.state === "approval-responded" || p.state === "output-denied"
               )
-              .map((p: Record<string, unknown>) => [
-                String(p.toolCallId ?? ""),
-                p,
-              ]) ?? []
+              .map((p: Record<string, unknown>) => [String(p.toolCallId ?? ""), p]) ?? []
         )
       );
       uiMessages = dbMessages.map((msg) => ({
         ...msg,
         parts: msg.parts.map((part) => {
-          if (
-            "toolCallId" in part &&
-            approvalStates.has(String(part.toolCallId))
-          ) {
+          if ("toolCallId" in part && approvalStates.has(String(part.toolCallId))) {
             return { ...part, ...approvalStates.get(String(part.toolCallId)) };
           }
           return part;
         }),
       })) as ChatMessage[];
     } else {
-      uiMessages = [
-        ...convertToUIMessages(messagesFromDb),
-        message as ChatMessage,
-      ];
+      uiMessages = [...convertToUIMessages(messagesFromDb), message as ChatMessage];
     }
 
     const { longitude, latitude, city, country } = geolocation(request);
@@ -239,9 +220,7 @@ export async function POST(request: Request) {
           },
         });
 
-        dataStream.merge(
-          result.toUIMessageStream({ sendReasoning: isReasoningModel })
-        );
+        dataStream.merge(result.toUIMessageStream({ sendReasoning: isReasoningModel }));
 
         if (titlePromise) {
           const title = await titlePromise;
@@ -311,10 +290,7 @@ export async function POST(request: Request) {
           if (streamContext) {
             const streamId = generateId();
             await createStreamId({ streamId, chatId: id });
-            await streamContext.createNewResumableStream(
-              streamId,
-              () => sseStream
-            );
+            await streamContext.createNewResumableStream(streamId, () => sseStream);
           }
         } catch (_) {
           /* non-critical */
@@ -330,9 +306,7 @@ export async function POST(request: Request) {
 
     if (
       error instanceof Error &&
-      error.message?.includes(
-        "AI Gateway requires a valid credit card on file to service requests"
-      )
+      error.message?.includes("AI Gateway requires a valid credit card on file to service requests")
     ) {
       return new ChatbotError("bad_request:activate_gateway").toResponse();
     }

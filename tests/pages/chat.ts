@@ -45,17 +45,12 @@ export class ChatPage {
   }
 
   async clickSuggestedAction(index = 0) {
-    const suggestions = this.page.locator(
-      "[data-testid='suggested-actions'] button"
-    );
+    const suggestions = this.page.locator("[data-testid='suggested-actions'] button");
     await suggestions.nth(index).click();
   }
 
   async openModelSelector() {
-    const modelButton = this.page
-      .locator("button")
-      .filter({ hasText: MODEL_BUTTON_REGEX })
-      .first();
+    const modelButton = this.page.locator("button").filter({ hasText: MODEL_BUTTON_REGEX }).first();
     await modelButton.click();
   }
 

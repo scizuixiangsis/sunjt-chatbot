@@ -31,11 +31,7 @@ export async function checkIpRateLimit(ip: string | undefined) {
 
   try {
     const key = `ip-rate-limit:${ip}`;
-    const [count] = await redis
-      .multi()
-      .incr(key)
-      .expire(key, TTL_SECONDS, "NX")
-      .exec();
+    const [count] = await redis.multi().incr(key).expire(key, TTL_SECONDS, "NX").exec();
 
     if (typeof count === "number" && count > MAX_MESSAGES) {
       throw new ChatbotError("rate_limit:chat");

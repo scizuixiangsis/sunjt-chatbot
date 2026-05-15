@@ -11,11 +11,7 @@ type UpdateDocumentProps = {
   modelId: string;
 };
 
-export const updateDocument = ({
-  session,
-  dataStream,
-  modelId,
-}: UpdateDocumentProps) =>
+export const updateDocument = ({ session, dataStream, modelId }: UpdateDocumentProps) =>
   tool({
     description:
       "Full rewrite of an existing artifact. Only use for major changes where most content needs replacing. Prefer editDocument for targeted changes.",
@@ -46,8 +42,7 @@ export const updateDocument = ({
       });
 
       const documentHandler = documentHandlersByArtifactKind.find(
-        (documentHandlerByArtifactKind) =>
-          documentHandlerByArtifactKind.kind === document.kind
+        (documentHandlerByArtifactKind) => documentHandlerByArtifactKind.kind === document.kind
       );
 
       if (!documentHandler) {

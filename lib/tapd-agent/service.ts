@@ -7,11 +7,7 @@ import {
   setFixAttempt,
   updateAgentTask,
 } from "./store";
-import {
-  fetchTapdBugs,
-  hasTapdCredentials,
-  writeBackToTapd,
-} from "./tapd-client";
+import { fetchTapdBugs, hasTapdCredentials, writeBackToTapd } from "./tapd-client";
 import type { AgentBugTask, TapdBugFilters } from "./types";
 
 export async function syncTapdBugs(filters: TapdBugFilters) {

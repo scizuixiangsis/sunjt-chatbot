@@ -25,10 +25,7 @@ export async function GET(request: Request) {
     });
   }
 
-  if (
-    chat.visibility === "private" &&
-    (!session?.user || session.user.id !== chat.userId)
-  ) {
+  if (chat.visibility === "private" && (!session?.user || session.user.id !== chat.userId)) {
     return Response.json({ error: "forbidden" }, { status: 403 });
   }
 

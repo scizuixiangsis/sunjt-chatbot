@@ -17,11 +17,7 @@ function getResponseForPrompt(prompt: unknown): string {
   if (promptStr.includes("weather") || promptStr.includes("temperature")) {
     return mockResponses.weather;
   }
-  if (
-    promptStr.includes("hello") ||
-    promptStr.includes("hi") ||
-    promptStr.includes("hey")
-  ) {
+  if (promptStr.includes("hello") || promptStr.includes("hi") || promptStr.includes("hey")) {
     return mockResponses.greeting;
   }
 

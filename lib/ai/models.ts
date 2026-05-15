@@ -184,9 +184,7 @@ export function getAnthropicBaseURL() {
   }
 
   const trimmedBaseUrl = anthropicBaseUrl.replace(/\/+$/, "");
-  return trimmedBaseUrl.endsWith("/v1")
-    ? trimmedBaseUrl
-    : `${trimmedBaseUrl}/v1`;
+  return trimmedBaseUrl.endsWith("/v1") ? trimmedBaseUrl : `${trimmedBaseUrl}/v1`;
 }
 
 export function usesQnaigcAnthropicCompat() {
@@ -203,9 +201,7 @@ export function hasAnthropicApiKey() {
 
 export function getProviderModelId(modelId: string) {
   if (usesQnaigcAnthropicCompat()) {
-    return (
-      qnaigcAnthropicModelMap[modelId] ?? modelId.split("/").slice(1).join("/")
-    );
+    return qnaigcAnthropicModelMap[modelId] ?? modelId.split("/").slice(1).join("/");
   }
 
   return modelId.split("/").slice(1).join("/");
@@ -240,9 +236,7 @@ function isAnthropicModelAvailable(modelId: string) {
   return true;
 }
 
-export async function getCapabilities(): Promise<
-  Record<string, ModelCapabilities>
-> {
+export async function getCapabilities(): Promise<Record<string, ModelCapabilities>> {
   const results = await Promise.all(
     chatModels.map(async (model) => {
       const directCapabilities = directModelCapabilities[model.id];
@@ -251,10 +245,9 @@ export async function getCapabilities(): Promise<
       }
 
       try {
-        const res = await fetch(
-          `https://ai-gateway.vercel.sh/v1/models/${model.id}/endpoints`,
-          { next: { revalidate: 86_400 } }
-        );
+        const res = await fetch(`https://ai-gateway.vercel.sh/v1/models/${model.id}/endpoints`, {
+          next: { revalidate: 86_400 },
+        });
         if (!res.ok) {
           return [model.id, { tools: false, vision: false, reasoning: false }];
         }
@@ -263,13 +256,10 @@ export async function getCapabilities(): Promise<
         const endpoints = json.data?.endpoints ?? [];
         const params = new Set(
           endpoints.flatMap(
-            (e: { supported_parameters?: string[] }) =>
-              e.supported_parameters ?? []
+            (e: { supported_parameters?: string[] }) => e.supported_parameters ?? []
           )
         );
-        const inputModalities = new Set(
-          json.data?.architecture?.input_modalities ?? []
-        );
+        const inputModalities = new Set(json.data?.architecture?.input_modalities ?? []);
 
         return [
           model.id,
@@ -301,9 +291,7 @@ export type GatewayModelWithCapabilities = ChatModel & {
   capabilities: ModelCapabilities;
 };
 
-export async function getAllGatewayModels(): Promise<
-  GatewayModelWithCapabilities[]
-> {
+export async function getAllGatewayModels(): Promise<GatewayModelWithCapabilities[]> {
   try {
     const res = await fetch("https://ai-gateway.vercel.sh/v1/models", {
       next: { revalidate: 86_400 },

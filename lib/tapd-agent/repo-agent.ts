@@ -1,8 +1,4 @@
-import {
-  createBranchName,
-  createVerificationPlan,
-  markVerificationAsPlanned,
-} from "./runtime";
+import { createBranchName, createVerificationPlan, markVerificationAsPlanned } from "./runtime";
 import type { AgentAnalysis, FixAttempt, TapdBug } from "./types";
 
 const moduleFileHints: Record<string, string[]> = {
@@ -25,11 +21,7 @@ function inferSuspectedFiles(bug: TapdBug) {
     return moduleHints;
   }
 
-  return [
-    "app/(chat)/page.tsx",
-    "components/chat/app-sidebar.tsx",
-    "lib/utils.ts",
-  ];
+  return ["app/(chat)/page.tsx", "components/chat/app-sidebar.tsx", "lib/utils.ts"];
 }
 
 function inferBlockers(bug: TapdBug) {
@@ -69,10 +61,7 @@ export function analyzeBug(bug: TapdBug): AgentAnalysis {
   };
 }
 
-export function createFixAttempt(
-  bug: TapdBug,
-  analysis: AgentAnalysis
-): FixAttempt {
+export function createFixAttempt(bug: TapdBug, analysis: AgentAnalysis): FixAttempt {
   const branchName = createBranchName(bug.id);
   const verification = markVerificationAsPlanned(createVerificationPlan());
 

@@ -63,9 +63,7 @@ function getAuthConfig() {
 export function hasTapdCredentials() {
   const authConfig = getAuthConfig();
   return (
-    authConfig.hasAccessToken ||
-    authConfig.hasClientCredentials ||
-    authConfig.hasBasicCredentials
+    authConfig.hasAccessToken || authConfig.hasClientCredentials || authConfig.hasBasicCredentials
   );
 }
 
@@ -135,8 +133,7 @@ async function getCurrentTapdUser() {
 }
 
 function normalizeBug(record: Record<string, unknown>): TapdBug {
-  const workspaceId =
-    getString(record, "workspace_id") || process.env.TAPD_WORKSPACE_ID || "";
+  const workspaceId = getString(record, "workspace_id") || process.env.TAPD_WORKSPACE_ID || "";
   const id = getString(record, "id");
 
   return {
@@ -145,8 +142,7 @@ function normalizeBug(record: Record<string, unknown>): TapdBug {
     title: getString(record, "title"),
     description: getString(record, "description"),
     status: getString(record, "status"),
-    priority:
-      getString(record, "priority_label") || getString(record, "priority"),
+    priority: getString(record, "priority_label") || getString(record, "priority"),
     severity: getString(record, "severity"),
     module: getString(record, "module"),
     currentOwner: getString(record, "current_owner"),

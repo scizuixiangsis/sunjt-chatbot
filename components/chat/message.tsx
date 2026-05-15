@@ -5,13 +5,7 @@ import type { ChatMessage } from "@/lib/types";
 import { cn, sanitizeText } from "@/lib/utils";
 import { MessageContent, MessageResponse } from "../ai-elements/message";
 import { Shimmer } from "../ai-elements/shimmer";
-import {
-  Tool,
-  ToolContent,
-  ToolHeader,
-  ToolInput,
-  ToolOutput,
-} from "../ai-elements/tool";
+import { Tool, ToolContent, ToolHeader, ToolInput, ToolOutput } from "../ai-elements/tool";
 import { useDataStream } from "./data-stream-provider";
 import { DocumentToolResult } from "./document";
 import { DocumentPreview } from "./document-preview";
@@ -44,9 +38,7 @@ const PurePreviewMessage = ({
   requiresScrollPadding: boolean;
   onEdit?: (message: ChatMessage) => void;
 }) => {
-  const attachmentsFromMessage = message.parts.filter(
-    (part) => part.type === "file"
-  );
+  const attachmentsFromMessage = message.parts.filter((part) => part.type === "file");
 
   useDataStream();
 
@@ -56,18 +48,13 @@ const PurePreviewMessage = ({
   const hasAnyContent = message.parts?.some(
     (part) =>
       (part.type === "text" && part.text?.trim().length > 0) ||
-      (part.type === "reasoning" &&
-        "text" in part &&
-        part.text?.trim().length > 0) ||
+      (part.type === "reasoning" && "text" in part && part.text?.trim().length > 0) ||
       part.type.startsWith("tool-")
   );
   const isThinking = isAssistant && isLoading && !hasAnyContent;
 
   const attachments = attachmentsFromMessage.length > 0 && (
-    <div
-      className="flex flex-row justify-end gap-2"
-      data-testid={"message-attachments"}
-    >
+    <div className="flex flex-row justify-end gap-2" data-testid={"message-attachments"}>
       {attachmentsFromMessage.map((attachment) => (
         <PreviewAttachment
           attachment={{
@@ -134,8 +121,7 @@ const PurePreviewMessage = ({
       const isDenied =
         state === "output-denied" ||
         (state === "approval-responded" &&
-          (part as { approval?: { approved?: boolean } }).approval?.approved ===
-            false);
+          (part as { approval?: { approved?: boolean } }).approval?.approved === false);
       const widthClass = "w-[min(100%,450px)]";
 
       if (state === "output-available") {
@@ -179,8 +165,7 @@ const PurePreviewMessage = ({
           <Tool className="w-full" defaultOpen={true}>
             <ToolHeader state={state} type="tool-getWeather" />
             <ToolContent>
-              {(state === "input-available" ||
-                state === "approval-requested") && (
+              {(state === "input-available" || state === "approval-requested") && (
                 <ToolInput input={part.input} />
               )}
               {state === "approval-requested" && approvalId && (
@@ -232,13 +217,7 @@ const PurePreviewMessage = ({
         );
       }
 
-      return (
-        <DocumentPreview
-          isReadonly={isReadonly}
-          key={toolCallId}
-          result={part.output}
-        />
-      );
+      return <DocumentPreview isReadonly={isReadonly} key={toolCallId} result={part.output} />;
     }
 
     if (type === "tool-updateDocument") {
@@ -270,11 +249,7 @@ const PurePreviewMessage = ({
       const { toolCallId, state } = part;
 
       return (
-        <Tool
-          className="w-[min(100%,450px)]"
-          defaultOpen={true}
-          key={toolCallId}
-        >
+        <Tool className="w-[min(100%,450px)]" defaultOpen={true} key={toolCallId}>
           <ToolHeader state={state} type="tool-requestSuggestions" />
           <ToolContent>
             {state === "input-available" && <ToolInput input={part.input} />}
@@ -338,11 +313,7 @@ const PurePreviewMessage = ({
       data-role={message.role}
       data-testid={`message-${message.role}`}
     >
-      <div
-        className={cn(
-          isUser ? "flex flex-col items-end gap-2" : "flex items-start gap-3"
-        )}
-      >
+      <div className={cn(isUser ? "flex flex-col items-end gap-2" : "flex items-start gap-3")}>
         {isAssistant && (
           <div className="flex h-[calc(13px*1.65)] shrink-0 items-center">
             <div className="flex size-7 items-center justify-center rounded-lg bg-muted/60 text-muted-foreground ring-1 ring-border/50">

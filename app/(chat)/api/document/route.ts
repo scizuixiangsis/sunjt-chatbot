@@ -21,10 +21,7 @@ export async function GET(request: Request) {
   const id = searchParams.get("id");
 
   if (!id) {
-    return new ChatbotError(
-      "bad_request:api",
-      "Parameter id is missing"
-    ).toResponse();
+    return new ChatbotError("bad_request:api", "Parameter id is missing").toResponse();
   }
 
   const session = await auth();
@@ -53,10 +50,7 @@ export async function POST(request: Request) {
   const id = searchParams.get("id");
 
   if (!id) {
-    return new ChatbotError(
-      "bad_request:api",
-      "Parameter id is required."
-    ).toResponse();
+    return new ChatbotError("bad_request:api", "Parameter id is required.").toResponse();
   }
 
   const session = await auth();
@@ -77,10 +71,7 @@ export async function POST(request: Request) {
     kind = parsed.kind;
     isManualEdit = parsed.isManualEdit;
   } catch {
-    return new ChatbotError(
-      "bad_request:api",
-      "Invalid request body."
-    ).toResponse();
+    return new ChatbotError("bad_request:api", "Invalid request body.").toResponse();
   }
 
   const documents = await getDocumentsById({ id });
@@ -115,17 +106,11 @@ export async function DELETE(request: Request) {
   const timestamp = searchParams.get("timestamp");
 
   if (!id) {
-    return new ChatbotError(
-      "bad_request:api",
-      "Parameter id is required."
-    ).toResponse();
+    return new ChatbotError("bad_request:api", "Parameter id is required.").toResponse();
   }
 
   if (!timestamp) {
-    return new ChatbotError(
-      "bad_request:api",
-      "Parameter timestamp is required."
-    ).toResponse();
+    return new ChatbotError("bad_request:api", "Parameter timestamp is required.").toResponse();
   }
 
   const session = await auth();
@@ -145,10 +130,7 @@ export async function DELETE(request: Request) {
   const parsedTimestamp = new Date(timestamp);
 
   if (Number.isNaN(parsedTimestamp.getTime())) {
-    return new ChatbotError(
-      "bad_request:api",
-      "Invalid timestamp."
-    ).toResponse();
+    return new ChatbotError("bad_request:api", "Invalid timestamp.").toResponse();
   }
 
   const documentsDeleted = await deleteDocumentsByIdAfterTimestamp({

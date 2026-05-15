@@ -83,19 +83,13 @@ export function ActiveChatProvider({ children }: { children: ReactNode }) {
   const [showCreditCardAlert, setShowCreditCardAlert] = useState(false);
 
   const { data: chatData, isLoading } = useSWR(
-    isNewChat
-      ? null
-      : `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/api/messages?chatId=${chatId}`,
+    isNewChat ? null : `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/api/messages?chatId=${chatId}`,
     fetcher,
     { revalidateOnFocus: false }
   );
 
-  const initialMessages: ChatMessage[] = isNewChat
-    ? []
-    : (chatData?.messages ?? []);
-  const visibility: VisibilityType = isNewChat
-    ? "private"
-    : (chatData?.visibility ?? "private");
+  const initialMessages: ChatMessage[] = isNewChat ? [] : (chatData?.messages ?? []);
+  const visibility: VisibilityType = isNewChat ? "private" : (chatData?.visibility ?? "private");
 
   const {
     messages,
@@ -132,9 +126,7 @@ export function ActiveChatProvider({ children }: { children: ReactNode }) {
           request.messages.some((msg) =>
             msg.parts?.some((part) => {
               const state = (part as { state?: string }).state;
-              return (
-                state === "approval-responded" || state === "output-denied"
-              );
+              return state === "approval-responded" || state === "output-denied";
             })
           );
 
@@ -285,11 +277,7 @@ export function ActiveChatProvider({ children }: { children: ReactNode }) {
     ]
   );
 
-  return (
-    <ActiveChatContext.Provider value={value}>
-      {children}
-    </ActiveChatContext.Provider>
-  );
+  return <ActiveChatContext.Provider value={value}>{children}</ActiveChatContext.Provider>;
 }
 
 export function useActiveChat() {

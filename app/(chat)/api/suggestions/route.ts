@@ -7,10 +7,7 @@ export async function GET(request: Request) {
   const documentId = searchParams.get("documentId");
 
   if (!documentId) {
-    return new ChatbotError(
-      "bad_request:api",
-      "Parameter documentId is required."
-    ).toResponse();
+    return new ChatbotError("bad_request:api", "Parameter documentId is required.").toResponse();
   }
 
   const session = await auth();

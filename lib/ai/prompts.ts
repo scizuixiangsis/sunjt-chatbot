@@ -103,10 +103,7 @@ Requirements:
 - Keep the data well-structured and meaningful
 `;
 
-export const updateDocumentPrompt = (
-  currentContent: string | null,
-  type: ArtifactKind
-) => {
+export const updateDocumentPrompt = (currentContent: string | null, type: ArtifactKind) => {
   const mediaTypes: Record<string, string> = {
     code: "script",
     sheet: "spreadsheet",

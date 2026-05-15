@@ -37,13 +37,9 @@ export function useArtifactSelector<Selected>(selector: Selector<Selected>) {
 }
 
 export function useArtifact() {
-  const { data: localArtifact, mutate: setLocalArtifact } = useSWR<UIArtifact>(
-    "artifact",
-    null,
-    {
-      fallbackData: initialArtifactData,
-    }
-  );
+  const { data: localArtifact, mutate: setLocalArtifact } = useSWR<UIArtifact>("artifact", null, {
+    fallbackData: initialArtifactData,
+  });
 
   const artifact = useMemo(() => {
     if (!localArtifact) {
@@ -67,15 +63,13 @@ export function useArtifact() {
     [setLocalArtifact]
   );
 
-  const { data: localArtifactMetadata, mutate: setLocalArtifactMetadata } =
-    useSWR<any>(
-      () =>
-        artifact.documentId ? `artifact-metadata-${artifact.documentId}` : null,
-      null,
-      {
-        fallbackData: null,
-      }
-    );
+  const { data: localArtifactMetadata, mutate: setLocalArtifactMetadata } = useSWR<any>(
+    () => (artifact.documentId ? `artifact-metadata-${artifact.documentId}` : null),
+    null,
+    {
+      fallbackData: null,
+    }
+  );
 
   return useMemo(
     () => ({

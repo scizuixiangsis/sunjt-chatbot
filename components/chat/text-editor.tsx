@@ -8,11 +8,7 @@ import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import type { Suggestion } from "@/lib/db/schema";
-import {
-  documentSchema,
-  handleTransaction,
-  headingRule,
-} from "@/lib/editor/config";
+import { documentSchema, handleTransaction, headingRule } from "@/lib/editor/config";
 import {
   buildContentFromDocument,
   buildDocumentFromContent,
@@ -38,17 +34,10 @@ type EditorProps = {
   activeSuggestion?: UISuggestion | null;
 };
 
-function PureEditor({
-  content,
-  onSaveContent,
-  suggestions,
-  status,
-}: EditorProps) {
+function PureEditor({ content, onSaveContent, suggestions, status }: EditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<EditorView | null>(null);
-  const [activeSuggestion, setActiveSuggestion] = useState<UISuggestion | null>(
-    null
-  );
+  const [activeSuggestion, setActiveSuggestion] = useState<UISuggestion | null>(null);
   const suggestionsRef = useRef<UISuggestion[]>([]);
 
   useEffect(() => {
@@ -115,9 +104,7 @@ function PureEditor({
 
   useEffect(() => {
     if (editorRef.current && content) {
-      const currentContent = buildContentFromDocument(
-        editorRef.current.state.doc
-      );
+      const currentContent = buildContentFromDocument(editorRef.current.state.doc);
 
       if (status === "streaming") {
         const newDocument = buildDocumentFromContent(content);
@@ -153,16 +140,11 @@ function PureEditor({
       const projectedSuggestions = projectWithPositions(
         editorRef.current.state.doc,
         suggestions
-      ).filter(
-        (suggestion) => suggestion.selectionStart && suggestion.selectionEnd
-      );
+      ).filter((suggestion) => suggestion.selectionStart && suggestion.selectionEnd);
 
       suggestionsRef.current = projectedSuggestions;
 
-      const decorations = createDecorations(
-        projectedSuggestions,
-        editorRef.current
-      );
+      const decorations = createDecorations(projectedSuggestions, editorRef.current);
 
       const transaction = editorRef.current.state.tr;
       transaction.setMeta(suggestionsPluginKey, { decorations });
@@ -220,9 +202,7 @@ function PureEditor({
             onClose={() => setActiveSuggestion(null)}
             suggestion={activeSuggestion}
           />,
-          containerRef.current.closest(
-            "[data-slot='artifact-content']"
-          ) as HTMLElement
+          containerRef.current.closest("[data-slot='artifact-content']") as HTMLElement
         )}
     </>
   );

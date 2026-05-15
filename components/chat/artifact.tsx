@@ -29,12 +29,7 @@ import { Toolbar } from "./toolbar";
 import { VersionFooter } from "./version-footer";
 import type { VisibilityType } from "./visibility-selector";
 
-export const artifactDefinitions = [
-  textArtifact,
-  codeArtifact,
-  imageArtifact,
-  sheetArtifact,
-];
+export const artifactDefinitions = [textArtifact, codeArtifact, imageArtifact, sheetArtifact];
 export type ArtifactKind = (typeof artifactDefinitions)[number]["kind"];
 
 export type UIArtifact = {
@@ -188,9 +183,7 @@ function PureArtifact({
           setIsContentDirty(false);
 
           return currentDocuments.map((doc, i) =>
-            i === currentDocuments.length - 1
-              ? { ...doc, content: updatedContent }
-              : doc
+            i === currentDocuments.length - 1 ? { ...doc, content: updatedContent } : doc
           );
         },
         { revalidate: false }
@@ -260,9 +253,7 @@ function PureArtifact({
   const [isToolbarVisible, setIsToolbarVisible] = useState(true);
 
   const isCurrentVersion =
-    documents && documents.length > 0
-      ? currentVersionIndex === documents.length - 1
-      : true;
+    documents && documents.length > 0 ? currentVersionIndex === documents.length - 1 : true;
 
   const { width: windowWidth, height: windowHeight } = useWindowSize();
   const isMobile = windowWidth ? windowWidth < 768 : false;
@@ -353,17 +344,14 @@ function PureArtifact({
           if (!el) {
             return;
           }
-          const atBottom =
-            el.scrollHeight - el.scrollTop - el.clientHeight < 40;
+          const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 40;
           userScrolledArtifact.current = !atBottom;
         }}
         ref={artifactContentRef}
       >
         <artifactDefinition.content
           content={
-            isCurrentVersion
-              ? artifact.content
-              : getDocumentContentById(currentVersionIndex)
+            isCurrentVersion ? artifact.content : getDocumentContentById(currentVersionIndex)
           }
           currentVersionIndex={currentVersionIndex}
           getDocumentContentById={getDocumentContentById}

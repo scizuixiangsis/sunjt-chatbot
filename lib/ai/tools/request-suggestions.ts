@@ -13,11 +13,7 @@ type RequestSuggestionsProps = {
   modelId: string;
 };
 
-export const requestSuggestions = ({
-  session,
-  dataStream,
-  modelId,
-}: RequestSuggestionsProps) =>
+export const requestSuggestions = ({ session, dataStream, modelId }: RequestSuggestionsProps) =>
   tool({
     description:
       "Request writing suggestions for an existing document artifact. Only use this when the user explicitly asks to improve or get suggestions for a document they have already created. Never use for general questions.",
@@ -41,10 +37,7 @@ export const requestSuggestions = ({
         return { error: "Forbidden" };
       }
 
-      const suggestions: Omit<
-        Suggestion,
-        "userId" | "createdAt" | "documentCreatedAt"
-      >[] = [];
+      const suggestions: Omit<Suggestion, "userId" | "createdAt" | "documentCreatedAt">[] = [];
 
       const { partialOutputStream } = streamText({
         model: getLanguageModel(modelId),
@@ -55,9 +48,7 @@ export const requestSuggestions = ({
           element: z.object({
             originalSentence: z.string().describe("The original sentence"),
             suggestedSentence: z.string().describe("The suggested sentence"),
-            description: z
-              .string()
-              .describe("The description of the suggestion"),
+            description: z.string().describe("The description of the suggestion"),
           }),
         }),
       });
@@ -70,11 +61,7 @@ export const requestSuggestions = ({
 
         for (let i = processedCount; i < partialOutput.length; i++) {
           const element = partialOutput[i];
-          if (
-            !element?.originalSentence ||
-            !element?.suggestedSentence ||
-            !element?.description
-          ) {
+          if (!element?.originalSentence || !element?.suggestedSentence || !element?.description) {
             continue;
           }
 

@@ -67,9 +67,7 @@ export function BugAgentConsole() {
   const [runningAction, setRunningAction] = useState<string | null>(null);
 
   const tapdStatusOptions = useMemo(() => {
-    const statusSet = new Set(
-      allTasks.map((task) => task.bug.status).filter(Boolean)
-    );
+    const statusSet = new Set(allTasks.map((task) => task.bug.status).filter(Boolean));
 
     return Array.from(statusSet)
       .sort((left, right) => left.localeCompare(right))
@@ -88,9 +86,7 @@ export function BugAgentConsole() {
       return allTasks;
     }
 
-    return allTasks.filter((task) =>
-      selectedStatuses.includes(task.bug.status)
-    );
+    return allTasks.filter((task) => selectedStatuses.includes(task.bug.status));
   }, [allTasks, isAllStatusSelected, selectedStatuses]);
 
   const selectedTask = useMemo(() => {
@@ -140,10 +136,7 @@ export function BugAgentConsole() {
     setSelectedBugId(task.bug.id);
   };
 
-  const runAction = async (
-    action: "analyze" | "fix" | "approve",
-    successMessage: string
-  ) => {
+  const runAction = async (action: "analyze" | "fix" | "approve", successMessage: string) => {
     if (!selectedTask) {
       return;
     }
@@ -151,12 +144,8 @@ export function BugAgentConsole() {
     setRunningAction(action);
 
     try {
-      const body =
-        action === "approve" ? { targetStatus: "resolved" } : undefined;
-      const data = await postAction(
-        `/api/tapd-agent/bugs/${selectedTask.bug.id}/${action}`,
-        body
-      );
+      const body = action === "approve" ? { targetStatus: "resolved" } : undefined;
+      const data = await postAction(`/api/tapd-agent/bugs/${selectedTask.bug.id}/${action}`, body);
       updateTask(data.task);
       toast.success(successMessage);
     } catch (_error) {
@@ -169,15 +158,11 @@ export function BugAgentConsole() {
   const toggleStatus = (status: string) => {
     setSelectedStatuses((currentStatuses) => {
       if (currentStatuses.length === 0) {
-        return allTapdStatusValues.filter(
-          (currentStatus) => currentStatus !== status
-        );
+        return allTapdStatusValues.filter((currentStatus) => currentStatus !== status);
       }
 
       if (currentStatuses.includes(status)) {
-        return currentStatuses.filter(
-          (currentStatus) => currentStatus !== status
-        );
+        return currentStatuses.filter((currentStatus) => currentStatus !== status);
       }
 
       return [...currentStatuses, status];
@@ -204,16 +189,12 @@ export function BugAgentConsole() {
         >
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="line-clamp-2 font-medium text-sm">
-                {task.bug.title}
-              </p>
+              <p className="line-clamp-2 font-medium text-sm">{task.bug.title}</p>
               <p className="mt-1 text-muted-foreground text-xs">
                 #{task.bug.id} · {task.bug.module || "未标注模块"}
               </p>
             </div>
-            <Badge variant="outline">
-              {statusLabels[task.agentStatus] ?? task.agentStatus}
-            </Badge>
+            <Badge variant="outline">{statusLabels[task.agentStatus] ?? task.agentStatus}</Badge>
           </div>
         </button>
       ))}
@@ -232,14 +213,8 @@ export function BugAgentConsole() {
     return (
       <div className="space-y-4">
         <p className="text-sm">{selectedTask.analysis.summary}</p>
-        <InfoList
-          items={selectedTask.analysis.suspectedFiles}
-          title="疑似文件"
-        />
-        <InfoList
-          items={selectedTask.analysis.reproductionPlan}
-          title="复现计划"
-        />
+        <InfoList items={selectedTask.analysis.suspectedFiles} title="疑似文件" />
+        <InfoList items={selectedTask.analysis.reproductionPlan} title="复现计划" />
         <InfoList items={selectedTask.analysis.fixPlan} title="修复计划" />
         {selectedTask.analysis.blockers.length > 0 && (
           <InfoList items={selectedTask.analysis.blockers} title="阻塞信息" />
@@ -261,29 +236,19 @@ export function BugAgentConsole() {
       <div className="space-y-4">
         <div className="rounded-2xl bg-muted/30 p-4">
           <p className="text-muted-foreground text-xs">分支</p>
-          <p className="font-mono text-sm">
-            {selectedTask.fixAttempt.branchName}
-          </p>
+          <p className="font-mono text-sm">{selectedTask.fixAttempt.branchName}</p>
         </div>
         <p className="text-sm">{selectedTask.fixAttempt.diffSummary}</p>
-        <InfoList
-          items={selectedTask.fixAttempt.changedFiles}
-          title="计划修改文件"
-        />
+        <InfoList items={selectedTask.fixAttempt.changedFiles} title="计划修改文件" />
         <div className="space-y-2">
           <p className="font-medium text-sm">验证命令</p>
           {selectedTask.fixAttempt.verification.map((step) => (
-            <div
-              className="rounded-xl border bg-background p-3 text-sm"
-              key={step.id}
-            >
+            <div className="rounded-xl border bg-background p-3 text-sm" key={step.id}>
               <div className="flex items-center justify-between gap-3">
                 <span className="font-mono">{step.command}</span>
                 <Badge variant="secondary">{step.status}</Badge>
               </div>
-              <p className="mt-2 text-muted-foreground text-xs">
-                {step.output}
-              </p>
+              <p className="mt-2 text-muted-foreground text-xs">{step.output}</p>
             </div>
           ))}
         </div>
@@ -299,15 +264,10 @@ export function BugAgentConsole() {
     return (
       <div className="space-y-3">
         {selectedTask.auditEvents.map((event) => (
-          <div
-            className="rounded-xl border bg-background p-3 text-sm"
-            key={event.id}
-          >
+          <div className="rounded-xl border bg-background p-3 text-sm" key={event.id}>
             <div className="flex items-center justify-between gap-3">
               <span className="font-medium">{event.action}</span>
-              <span className="text-muted-foreground text-xs">
-                {event.createdAt}
-              </span>
+              <span className="text-muted-foreground text-xs">{event.createdAt}</span>
             </div>
             <p className="mt-2 text-muted-foreground">{event.message}</p>
           </div>
@@ -373,32 +333,19 @@ export function BugAgentConsole() {
                   <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
-                        <Badge variant="outline">
-                          {selectedTask.bug.status}
-                        </Badge>
-                        <Badge variant="secondary">
-                          {selectedTask.bug.priority}
-                        </Badge>
-                        <Badge variant="secondary">
-                          {selectedTask.bug.severity}
-                        </Badge>
+                        <Badge variant="outline">{selectedTask.bug.status}</Badge>
+                        <Badge variant="secondary">{selectedTask.bug.priority}</Badge>
+                        <Badge variant="secondary">{selectedTask.bug.severity}</Badge>
                       </div>
-                      <h2 className="mt-3 font-semibold text-xl">
-                        {selectedTask.bug.title}
-                      </h2>
+                      <h2 className="mt-3 font-semibold text-xl">{selectedTask.bug.title}</h2>
                       <p className="mt-2 text-muted-foreground text-sm">
-                        负责人：{selectedTask.bug.currentOwner || "未分配"} ·
-                        创建人：
+                        负责人：{selectedTask.bug.currentOwner || "未分配"} · 创建人：
                         {selectedTask.bug.reporter || "未知"}
                       </p>
                     </div>
                     {selectedTask.bug.url && (
                       <Button asChild variant="outline">
-                        <a
-                          href={selectedTask.bug.url}
-                          rel="noopener"
-                          target="_blank"
-                        >
+                        <a href={selectedTask.bug.url} rel="noopener" target="_blank">
                           打开 TAPD
                         </a>
                       </Button>
@@ -425,9 +372,7 @@ export function BugAgentConsole() {
                   <Panel
                     action={
                       <Button
-                        disabled={
-                          Boolean(runningAction) || !selectedTask.analysis
-                        }
+                        disabled={Boolean(runningAction) || !selectedTask.analysis}
                         onClick={() => runAction("fix", "修复计划已生成")}
                         type="button"
                       >
@@ -445,9 +390,7 @@ export function BugAgentConsole() {
                   <Panel
                     action={
                       <Button
-                        disabled={
-                          Boolean(runningAction) || !selectedTask.fixAttempt
-                        }
+                        disabled={Boolean(runningAction) || !selectedTask.fixAttempt}
                         onClick={() => runAction("approve", "已完成回写确认")}
                         type="button"
                       >
@@ -489,9 +432,7 @@ function StatusFilter({
   }>;
   selectedStatuses: string[];
 }) {
-  const triggerText = isAllSelected
-    ? "全部状态"
-    : `已选 ${selectedStatuses.length} 个状态`;
+  const triggerText = isAllSelected ? "全部状态" : `已选 ${selectedStatuses.length} 个状态`;
 
   return (
     <DropdownMenu>
@@ -550,10 +491,7 @@ function InfoList({ items, title }: { items: string[]; title: string }) {
       <p className="font-medium text-sm">{title}</p>
       <ul className="space-y-2">
         {items.map((item) => (
-          <li
-            className="rounded-xl border bg-background px-3 py-2 text-sm"
-            key={item}
-          >
+          <li className="rounded-xl border bg-background px-3 py-2 text-sm" key={item}>
             {item}
           </li>
         ))}

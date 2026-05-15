@@ -1,10 +1,4 @@
-import type {
-  AgentAuditEvent,
-  AgentBugTask,
-  AgentTaskStatus,
-  FixAttempt,
-  TapdBug,
-} from "./types";
+import type { AgentAuditEvent, AgentBugTask, AgentTaskStatus, FixAttempt, TapdBug } from "./types";
 
 type StoreState = {
   tasks: Map<string, AgentBugTask>;
@@ -82,10 +76,7 @@ export function replaceAgentTasks(bugs: TapdBug[]) {
   return listAgentTasks();
 }
 
-export function updateAgentTask(
-  bugId: string,
-  updater: (task: AgentBugTask) => AgentBugTask
-) {
+export function updateAgentTask(bugId: string, updater: (task: AgentBugTask) => AgentBugTask) {
   const store = getStore();
   const task = store.tasks.get(bugId);
 
@@ -106,10 +97,7 @@ export function appendAuditEvent({
 }: Omit<AgentAuditEvent, "id" | "createdAt">) {
   return updateAgentTask(bugId, (task) => ({
     ...task,
-    auditEvents: [
-      createAuditEvent({ bugId, action, actor, message }),
-      ...task.auditEvents,
-    ],
+    auditEvents: [createAuditEvent({ bugId, action, actor, message }), ...task.auditEvents],
   }));
 }
 

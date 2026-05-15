@@ -14,10 +14,9 @@ export default function Page() {
   const [email, setEmail] = useState("");
   const [isSuccessful, setIsSuccessful] = useState(false);
 
-  const [state, formAction] = useActionState<RegisterActionState, FormData>(
-    register,
-    { status: "idle" }
-  );
+  const [state, formAction] = useActionState<RegisterActionState, FormData>(register, {
+    status: "idle",
+  });
 
   const { update: updateSession } = useSession();
 
@@ -53,10 +52,7 @@ export default function Page() {
         <SubmitButton isSuccessful={isSuccessful}>Sign up</SubmitButton>
         <p className="text-center text-[13px] text-muted-foreground">
           {"Have an account? "}
-          <Link
-            className="text-foreground underline-offset-4 hover:underline"
-            href="/login"
-          >
+          <Link className="text-foreground underline-offset-4 hover:underline" href="/login">
             Sign in
           </Link>
         </p>

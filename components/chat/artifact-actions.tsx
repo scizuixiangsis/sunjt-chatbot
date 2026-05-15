@@ -64,8 +64,7 @@ function PureArtifactActions({
                   "active:scale-95",
                   "disabled:pointer-events-none disabled:opacity-30",
                   {
-                    "text-foreground":
-                      mode === "diff" && action.description === "View changes",
+                    "text-foreground": mode === "diff" && action.description === "View changes",
                   }
                 )}
                 disabled={disabled}
@@ -95,25 +94,22 @@ function PureArtifactActions({
   );
 }
 
-export const ArtifactActions = memo(
-  PureArtifactActions,
-  (prevProps, nextProps) => {
-    if (prevProps.artifact.status !== nextProps.artifact.status) {
-      return false;
-    }
-    if (prevProps.currentVersionIndex !== nextProps.currentVersionIndex) {
-      return false;
-    }
-    if (prevProps.isCurrentVersion !== nextProps.isCurrentVersion) {
-      return false;
-    }
-    if (prevProps.artifact.content !== nextProps.artifact.content) {
-      return false;
-    }
-    if (prevProps.mode !== nextProps.mode) {
-      return false;
-    }
-
-    return true;
+export const ArtifactActions = memo(PureArtifactActions, (prevProps, nextProps) => {
+  if (prevProps.artifact.status !== nextProps.artifact.status) {
+    return false;
   }
-);
+  if (prevProps.currentVersionIndex !== nextProps.currentVersionIndex) {
+    return false;
+  }
+  if (prevProps.isCurrentVersion !== nextProps.isCurrentVersion) {
+    return false;
+  }
+  if (prevProps.artifact.content !== nextProps.artifact.content) {
+    return false;
+  }
+  if (prevProps.mode !== nextProps.mode) {
+    return false;
+  }
+
+  return true;
+});

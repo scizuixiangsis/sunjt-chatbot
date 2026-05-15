@@ -54,24 +54,16 @@ function PureArtifactMessages({
           key={message.id}
           message={message}
           regenerate={regenerate}
-          requiresScrollPadding={
-            hasSentMessage && index === messages.length - 1
-          }
+          requiresScrollPadding={hasSentMessage && index === messages.length - 1}
           setMessages={setMessages}
-          vote={
-            votes
-              ? votes.find((vote) => vote.messageId === message.id)
-              : undefined
-          }
+          vote={votes ? votes.find((vote) => vote.messageId === message.id) : undefined}
         />
       ))}
 
       <AnimatePresence mode="wait">
         {status === "submitted" &&
           !messages.some((msg) =>
-            msg.parts?.some(
-              (part) => "state" in part && part.state === "approval-responded"
-            )
+            msg.parts?.some((part) => "state" in part && part.state === "approval-responded")
           ) && <ThinkingMessage key="thinking" />}
       </AnimatePresence>
 
@@ -85,14 +77,8 @@ function PureArtifactMessages({
   );
 }
 
-function areEqual(
-  prevProps: ArtifactMessagesProps,
-  nextProps: ArtifactMessagesProps
-) {
-  if (
-    prevProps.artifactStatus === "streaming" &&
-    nextProps.artifactStatus === "streaming"
-  ) {
+function areEqual(prevProps: ArtifactMessagesProps, nextProps: ArtifactMessagesProps) {
+  if (prevProps.artifactStatus === "streaming" && nextProps.artifactStatus === "streaming") {
     return true;
   }
 

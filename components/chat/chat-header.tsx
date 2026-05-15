@@ -25,12 +25,7 @@ function PureChatHeader({
 
   return (
     <header className="sticky top-0 flex h-14 items-center gap-2 bg-sidebar px-3">
-      <Button
-        className="md:hidden"
-        onClick={toggleSidebar}
-        size="icon-sm"
-        variant="ghost"
-      >
+      <Button className="md:hidden" onClick={toggleSidebar} size="icon-sm" variant="ghost">
         <PanelLeftIcon className="size-4" />
       </Button>
 
@@ -44,10 +39,7 @@ function PureChatHeader({
       </Link>
 
       {!isReadonly && (
-        <VisibilitySelector
-          chatId={chatId}
-          selectedVisibilityType={selectedVisibilityType}
-        />
+        <VisibilitySelector chatId={chatId} selectedVisibilityType={selectedVisibilityType} />
       )}
 
       <Button

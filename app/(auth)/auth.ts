@@ -31,10 +31,10 @@ declare module "next-auth/jwt" {
 }
 
 export const {
-  handlers: { GET, POST },  //给 NextAuth 的 API 路由用，处理登录、回调、session 等请求
-  auth,  //服务端读取当前登录状态的方法
-  signIn,  //触发登录
-  signOut,  //退出登录
+  handlers: { GET, POST }, //给 NextAuth 的 API 路由用，处理登录、回调、session 等请求
+  auth, //服务端读取当前登录状态的方法
+  signIn, //触发登录
+  signOut, //退出登录
 } = NextAuth({
   ...authConfig,
   providers: [
@@ -81,7 +81,8 @@ export const {
     }),
   ],
   callbacks: {
-    jwt({ token, user }) {  //JWT 回调：处理 JWT 的创建和更新
+    jwt({ token, user }) {
+      //JWT 回调：处理 JWT 的创建和更新
       if (user) {
         token.id = user.id as string;
         token.type = user.type;
@@ -89,7 +90,8 @@ export const {
 
       return token;
     },
-    session({ session, token }) {  //Session 回调：处理 Session 的创建和更新
+    session({ session, token }) {
+      //Session 回调：处理 Session 的创建和更新
       if (session.user) {
         session.user.id = token.id;
         session.user.type = token.type;
