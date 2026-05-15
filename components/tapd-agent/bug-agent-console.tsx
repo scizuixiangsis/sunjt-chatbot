@@ -22,24 +22,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  formatAgentStatus,
+  formatTapdBugStatus,
+  formatTapdPriority,
+  formatTapdSeverity,
+} from "@/lib/tapd-agent/presentation";
 import type { AgentBugTask } from "@/lib/tapd-agent/types";
 import { cn } from "@/lib/utils";
 
 type AgentListResponse = {
   mode: "tapd" | "unconfigured";
   tasks: AgentBugTask[];
-};
-
-const statusLabels: Record<string, string> = {
-  analyzing: "分析中",
-  blocked: "信息不足",
-  fixable: "可修复",
-  fixing: "修复中",
-  pending_analysis: "待分析",
-  pending_approval: "待确认",
-  pending_pr: "待提交 PR",
-  pending_verification: "待验证",
-  written_back: "已回写",
 };
 
 async function postAction(url: string, body?: Record<string, string>) {
@@ -72,7 +66,7 @@ export function BugAgentConsole() {
     return Array.from(statusSet)
       .sort((left, right) => left.localeCompare(right))
       .map((status) => ({
-        label: status,
+        label: formatTapdBugStatus(status),
         value: status,
       }));
   }, [allTasks]);
@@ -194,7 +188,7 @@ export function BugAgentConsole() {
                 #{task.bug.id} · {task.bug.module || "未标注模块"}
               </p>
             </div>
-            <Badge variant="outline">{statusLabels[task.agentStatus] ?? task.agentStatus}</Badge>
+            <Badge variant="outline">{formatAgentStatus(task.agentStatus)}</Badge>
           </div>
         </button>
       ))}
@@ -333,9 +327,15 @@ export function BugAgentConsole() {
                   <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
-                        <Badge variant="outline">{selectedTask.bug.status}</Badge>
-                        <Badge variant="secondary">{selectedTask.bug.priority}</Badge>
-                        <Badge variant="secondary">{selectedTask.bug.severity}</Badge>
+                        <Badge variant="outline">
+                          {formatTapdBugStatus(selectedTask.bug.status)}
+                        </Badge>
+                        <Badge variant="secondary">
+                          {formatTapdPriority(selectedTask.bug.priority)}
+                        </Badge>
+                        <Badge variant="secondary">
+                          {formatTapdSeverity(selectedTask.bug.severity)}
+                        </Badge>
                       </div>
                       <h2 className="mt-3 font-semibold text-xl">{selectedTask.bug.title}</h2>
                       <p className="mt-2 text-muted-foreground text-sm">
