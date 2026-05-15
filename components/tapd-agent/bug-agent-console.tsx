@@ -324,11 +324,10 @@ export function BugAgentConsole() {
             <div>
               <div className="flex items-center gap-2">
                 <BotIcon className="size-5 text-primary" />
-                <h1 className="font-semibold text-2xl">TAPD Bug 修复 Agent</h1>
+                <h1 className="font-semibold text-2xl">Bug 修复机器人</h1>
               </div>
               <p className="mt-2 text-muted-foreground text-sm">
-                从 TAPD
-                同步缺陷，生成分析、修复计划、验证计划，并在人工确认后回写。
+                从 TAPD 同步缺陷，生成分析、修复计划、验证计划，并在人工确认后回写。
               </p>
             </div>
             <div className="flex items-center gap-2">
