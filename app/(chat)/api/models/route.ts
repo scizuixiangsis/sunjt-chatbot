@@ -1,4 +1,10 @@
-import { getActiveModels, getAllGatewayModels, getCapabilities, isDemo } from "@/lib/ai/models";
+import {
+  DEFAULT_CHAT_MODEL,
+  getActiveModels,
+  getAllGatewayModels,
+  getCapabilities,
+  isDemo,
+} from "@/lib/ai/models";
 
 export async function GET() {
   const headers = {
@@ -13,7 +19,7 @@ export async function GET() {
       models.map((m) => [m.id, curatedCapabilities[m.id] ?? m.capabilities])
     );
 
-    return Response.json({ capabilities, models }, { headers });
+    return Response.json({ capabilities, defaultModelId: DEFAULT_CHAT_MODEL, models }, { headers });
   }
 
   const models = getActiveModels();
@@ -21,5 +27,5 @@ export async function GET() {
     models.map((model) => [model.id, curatedCapabilities[model.id]])
   );
 
-  return Response.json({ capabilities, models }, { headers });
+  return Response.json({ capabilities, defaultModelId: DEFAULT_CHAT_MODEL, models }, { headers });
 }

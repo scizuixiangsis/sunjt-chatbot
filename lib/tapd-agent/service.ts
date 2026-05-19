@@ -1,4 +1,4 @@
-import { analyzeBug, createFixAttempt } from "./repo-agent";
+import { analyzeBug, createFixAttempt, getCodeWorkspace, getTapdAgentModelId } from "./repo-agent";
 import {
   appendAuditEvent,
   getAgentTask,
@@ -11,10 +11,13 @@ import { fetchTapdBugs, hasTapdCredentials, writeBackToTapd } from "./tapd-clien
 import type { AgentBugTask, TapdBugFilters } from "./types";
 
 export async function syncTapdBugs(filters: TapdBugFilters) {
+  const workspace = await getCodeWorkspace();
+
   if (!hasTapdCredentials()) {
     return {
       mode: "unconfigured" as const,
       tasks: [],
+      workspace,
     };
   }
 
@@ -23,10 +26,11 @@ export async function syncTapdBugs(filters: TapdBugFilters) {
   return {
     mode: "tapd" as const,
     tasks: replaceAgentTasks(bugs),
+    workspace,
   };
 }
 
-export function runBugAnalysis(bugId: string) {
+export async function runBugAnalysis(bugId: string, requestedModelId?: string) {
   const task = getAgentTask(bugId);
 
   if (!task) {
@@ -34,7 +38,8 @@ export function runBugAnalysis(bugId: string) {
   }
 
   setAgentStatus(bugId, "analyzing");
-  const analysis = analyzeBug(task.bug);
+  const modelId = getTapdAgentModelId(requestedModelId);
+  const analysis = await analyzeBug(task.bug, { modelId });
   const nextStatus = analysis.blockers.length > 1 ? "blocked" : "fixable";
 
   return updateAgentTask(bugId, (currentTask) => ({
@@ -47,7 +52,7 @@ export function runBugAnalysis(bugId: string) {
         bugId,
         action: "analysis",
         actor: "agent",
-        message: "Agent 已完成缺陷分析并生成修复计划。",
+        message: `Agent 已使用 ${modelId} 完成缺陷分析并生成修复计划。`,
         createdAt: new Date().toISOString(),
       },
       ...currentTask.auditEvents,

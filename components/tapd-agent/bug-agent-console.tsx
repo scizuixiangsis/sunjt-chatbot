@@ -22,27 +22,44 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   formatAgentStatus,
   formatTapdBugStatus,
   formatTapdPriority,
   formatTapdSeverity,
 } from "@/lib/tapd-agent/presentation";
-import type { AgentBugTask } from "@/lib/tapd-agent/types";
+import type { AgentBugTask, AnalysisEvidence, CodeWorkspace } from "@/lib/tapd-agent/types";
 import { cn } from "@/lib/utils";
 
 type AgentListResponse = {
   mode: "tapd" | "unconfigured";
   tasks: AgentBugTask[];
+  workspace: CodeWorkspace;
 };
 
-async function postAction(url: string, body?: Record<string, string>) {
+type ModelOption = {
+  id: string;
+  name: string;
+  provider: string;
+};
+
+type ModelsResponse = {
+  defaultModelId: string;
+  models: ModelOption[];
+};
+
+async function postAction(url: string, body?: Record<string, string | undefined>) {
+  const payload = body
+    ? Object.fromEntries(Object.entries(body).filter(([, value]) => value !== undefined))
+    : undefined;
+
   const response = await fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: body ? JSON.stringify(body) : undefined,
+    body: payload ? JSON.stringify(payload) : undefined,
   });
 
   if (!response.ok) {
@@ -55,8 +72,11 @@ async function postAction(url: string, body?: Record<string, string>) {
 export function BugAgentConsole() {
   const [mode, setMode] = useState<"tapd" | "unconfigured">("unconfigured");
   const [allTasks, setAllTasks] = useState<AgentBugTask[]>([]);
+  const [modelOptions, setModelOptions] = useState<ModelOption[]>([]);
+  const [selectedModelId, setSelectedModelId] = useState("");
   const [selectedBugId, setSelectedBugId] = useState("");
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
+  const [workspace, setWorkspace] = useState<CodeWorkspace | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [runningAction, setRunningAction] = useState<string | null>(null);
 
@@ -100,6 +120,7 @@ export function BugAgentConsole() {
       const data = (await response.json()) as AgentListResponse;
       setMode(data.mode);
       setAllTasks(data.tasks);
+      setWorkspace(data.workspace);
 
       const firstTask = data.tasks.at(0);
 
@@ -116,6 +137,36 @@ export function BugAgentConsole() {
   useEffect(() => {
     loadTasks().catch(() => undefined);
   }, [loadTasks]);
+
+  useEffect(() => {
+    const loadModels = async () => {
+      try {
+        const response = await fetch("/api/models");
+
+        if (!response.ok) {
+          throw new Error("Load models failed");
+        }
+
+        const data = (await response.json()) as ModelsResponse;
+        setModelOptions(data.models);
+        setSelectedModelId((currentModelId) => {
+          if (currentModelId) {
+            return currentModelId;
+          }
+
+          if (data.models.some((model) => model.id === data.defaultModelId)) {
+            return data.defaultModelId;
+          }
+
+          return data.models.at(0)?.id ?? "";
+        });
+      } catch (_error) {
+        toast.error("模型列表加载失败");
+      }
+    };
+
+    loadModels().catch(() => undefined);
+  }, []);
 
   const updateTask = (task: AgentBugTask) => {
     setAllTasks((currentTasks) =>
@@ -138,7 +189,12 @@ export function BugAgentConsole() {
     setRunningAction(action);
 
     try {
-      const body = action === "approve" ? { targetStatus: "resolved" } : undefined;
+      const body =
+        action === "approve"
+          ? { targetStatus: "resolved" }
+          : action === "analyze" && selectedModelId
+            ? { modelId: selectedModelId }
+            : undefined;
       const data = await postAction(`/api/tapd-agent/bugs/${selectedTask.bug.id}/${action}`, body);
       updateTask(data.task);
       toast.success(successMessage);
@@ -207,7 +263,9 @@ export function BugAgentConsole() {
     return (
       <div className="space-y-4">
         <p className="text-sm">{selectedTask.analysis.summary}</p>
+        <InfoList items={selectedTask.analysis.searchKeywords} title="搜索关键词" />
         <InfoList items={selectedTask.analysis.suspectedFiles} title="疑似文件" />
+        <EvidenceList evidence={selectedTask.analysis.evidence} />
         <InfoList items={selectedTask.analysis.reproductionPlan} title="复现计划" />
         <InfoList items={selectedTask.analysis.fixPlan} title="修复计划" />
         {selectedTask.analysis.blockers.length > 0 && (
@@ -216,6 +274,8 @@ export function BugAgentConsole() {
       </div>
     );
   };
+
+  const selectedModel = modelOptions.find((model) => model.id === selectedModelId) ?? null;
 
   const renderFixAttempt = () => {
     if (!selectedTask?.fixAttempt) {
@@ -283,6 +343,14 @@ export function BugAgentConsole() {
               <p className="mt-2 text-muted-foreground text-sm">
                 从 TAPD 同步缺陷，生成分析、修复计划、验证计划，并在人工确认后回写。
               </p>
+              {workspace && (
+                <p className="mt-2 text-muted-foreground text-xs">
+                  分析代码库：{workspace.root}
+                  {workspace.branch && ` · ${workspace.branch}`}
+                  {workspace.commit && ` · ${workspace.commit}`}
+                  {!workspace.isConfigured && " · 默认当前项目"}
+                </p>
+              )}
             </div>
             <div className="flex items-center gap-2">
               <Badge
@@ -356,17 +424,40 @@ export function BugAgentConsole() {
                 <section className="grid gap-6 xl:grid-cols-2">
                   <Panel
                     action={
-                      <Button
-                        disabled={Boolean(runningAction)}
-                        onClick={() => runAction("analyze", "分析完成")}
-                        type="button"
-                      >
-                        <ShieldCheckIcon className="size-4" />
-                        开始分析
-                      </Button>
+                      <div className="flex flex-wrap items-center justify-end gap-2">
+                        <Select
+                          disabled={Boolean(runningAction) || modelOptions.length === 0}
+                          onValueChange={setSelectedModelId}
+                          value={selectedModelId}
+                        >
+                          <SelectTrigger className="w-[250px] rounded-xl">
+                            <SelectValue placeholder="选择分析模型" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {modelOptions.map((model) => (
+                              <SelectItem key={model.id} value={model.id}>
+                                {model.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Button
+                          disabled={Boolean(runningAction) || !selectedModelId}
+                          onClick={() => runAction("analyze", "分析完成")}
+                          type="button"
+                        >
+                          <ShieldCheckIcon className="size-4" />
+                          开始分析
+                        </Button>
+                      </div>
                     }
                     title="AI 分析"
                   >
+                    {selectedModel && (
+                      <p className="text-muted-foreground text-xs">
+                        当前分析模型：{selectedModel.name} · {selectedModel.id}
+                      </p>
+                    )}
                     {renderAnalysis()}
                   </Panel>
                   <Panel
@@ -481,8 +572,10 @@ function Panel({
   );
 }
 
-function InfoList({ items, title }: { items: string[]; title: string }) {
-  if (items.length === 0) {
+function InfoList({ items, title }: { items?: string[]; title: string }) {
+  const safeItems = items ?? [];
+
+  if (safeItems.length === 0) {
     return null;
   }
 
@@ -490,12 +583,47 @@ function InfoList({ items, title }: { items: string[]; title: string }) {
     <div className="space-y-2">
       <p className="font-medium text-sm">{title}</p>
       <ul className="space-y-2">
-        {items.map((item) => (
-          <li className="rounded-xl border bg-background px-3 py-2 text-sm" key={item}>
+        {safeItems.map((item, index) => (
+          <li className="rounded-xl border bg-background px-3 py-2 text-sm" key={`${item}-${index}`}>
             {item}
           </li>
         ))}
       </ul>
+    </div>
+  );
+}
+
+function EvidenceList({ evidence }: { evidence?: AnalysisEvidence[] }) {
+  const safeEvidence = evidence ?? [];
+
+  if (safeEvidence.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="space-y-2">
+      <p className="font-medium text-sm">代码证据</p>
+      <div className="space-y-3">
+        {safeEvidence.map((item) => (
+          <div
+            className="rounded-xl border bg-background p-3 text-sm"
+            key={`${item.filePath}-${item.startLine}-${item.endLine}`}
+          >
+            <div className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
+              <p className="font-mono text-muted-foreground text-xs">
+                {item.filePath}:{item.contextStartLine}-{item.contextEndLine}
+              </p>
+              <Badge variant={item.relevance === "high" ? "default" : "secondary"}>
+                {item.relevance}
+              </Badge>
+            </div>
+            <p className="mt-2 text-muted-foreground text-xs">{item.reason}</p>
+            <pre className="mt-3 max-h-64 overflow-x-auto whitespace-pre-wrap rounded-xl bg-muted/30 p-3 font-mono text-xs">
+              {item.snippet}
+            </pre>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

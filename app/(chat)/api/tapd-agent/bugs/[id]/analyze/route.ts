@@ -2,7 +2,7 @@ import { auth } from "@/app/(auth)/auth";
 import { ChatbotError } from "@/lib/errors";
 import { runBugAnalysis } from "@/lib/tapd-agent/service";
 
-export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
 
   if (!session?.user) {
@@ -10,7 +10,19 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
   }
 
   const { id } = await params;
-  const task = runBugAnalysis(id);
+  let modelId: string | undefined;
+
+  try {
+    const body = (await request.json()) as { modelId?: unknown };
+
+    if (typeof body.modelId === "string") {
+      modelId = body.modelId;
+    }
+  } catch {
+    modelId = undefined;
+  }
+
+  const task = await runBugAnalysis(id, modelId);
 
   if (!task) {
     return Response.json({ error: "Bug task not found" }, { status: 404 });

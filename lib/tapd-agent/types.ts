@@ -43,13 +43,35 @@ export type AgentAuditEvent = {
   createdAt: string;
 };
 
+export type AnalysisEvidence = {
+  filePath: string;
+  snippet: string;
+  context: string;
+  reason: string;
+  relevance: "low" | "medium" | "high";
+  keywords: string[];
+  startLine: number;
+  endLine: number;
+  contextStartLine: number;
+  contextEndLine: number;
+};
+
 export type AgentAnalysis = {
   summary: string;
   confidence: "low" | "medium" | "high";
+  evidence: AnalysisEvidence[];
+  searchKeywords: string[];
   suspectedFiles: string[];
   reproductionPlan: string[];
   fixPlan: string[];
   blockers: string[];
+};
+
+export type CodeWorkspace = {
+  root: string;
+  branch: string;
+  commit: string;
+  isConfigured: boolean;
 };
 
 export type RuntimeStep = {
